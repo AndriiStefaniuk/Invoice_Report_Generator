@@ -19,9 +19,6 @@ public class UserTableManager {
     public UserTableManager(Connection connection){
         this.connection = connection;
 
-        if(connection == null){
-            throw new RuntimeException("connection to database it null");
-        }
     }
 
     /**
@@ -29,12 +26,12 @@ public class UserTableManager {
      * @param userData populated UserRegistrationDto object representing user settings
      */
     public void signUp(UserRegistrationDto userData){
-        if(!isConnectionValid()){
-            throw new RuntimeException("UserTableManager -> signUp(): Invalid db connection ");
+        if(userData == null){
+            return;
         }
 
-        if(doesUserExist(userData)){
-            throw new RuntimeException("UserTableManager -> signUp(): user already exists");
+        if(!isConnectionValid()){
+            throw new RuntimeException("UserTableManager -> signUp(): Invalid db connection ");
         }
         String sql ="INSERT INTO users (user_name, password, full_name, home_address, hst_number, hourly_rate) " +
                 "VALUES(?, ?, ?, ?, ?, ?)";
@@ -67,6 +64,10 @@ public class UserTableManager {
      * @return int representing the id, -1 if no username or password found in the database
      */
     public int getIDbyNameAndPassword(SignInDto singInData){
+        if(singInData == null){
+            return -1;
+        }
+
         if(!isConnectionValid()){
             throw new RuntimeException("UserTableManager -> getIDbyNameAndPassword(): Invalid db connection ");
         }
@@ -97,12 +98,12 @@ public class UserTableManager {
      * @return populated UserSettings objects containing user settings or null, if no user exists
      */
     public UserSettings fetchUserSettings(int id){
+        // getIDbyNameAndPassword() returns id -1 if no user found
+        if(id == -1) return null;
+
         if(!isConnectionValid()){
             throw new RuntimeException("UserTableManager -> fetchUserSettings(): Invalid db connection ");
         }
-
-        // getIDbyNameAndPassword() returns id -1 if no user found
-        if(id == -1) return null;
 
         String sql = "SELECT full_name, home_address, hst_number, hourly_rate FROM users WHERE id = ?";
 
@@ -129,12 +130,18 @@ public class UserTableManager {
         }
     }
 
+
+
     /**
      * updates existing row for the user in the users table in database
      * @param userID unique ID for the user for who you change data
      * @param userData populated UserRegistrationDto object representing new data
      */
     public void updateUserSettings(int userID, UserRegistrationDto userData){
+        if(userData == null || userID <= 0){
+            return;
+        }
+
         if(!isConnectionValid()){
             throw new RuntimeException("UserTableManager -> updateUserSettings(): Invalid db connection ");
         }
@@ -163,7 +170,11 @@ public class UserTableManager {
      * checks whether the user already exists in the database
      * @return true if user exists in database
      */
-    private boolean doesUserExist(UserRegistrationDto userData){
+    public boolean doesUserExist(UserRegistrationDto userData){
+        if(userData == null){
+            return false;
+        }
+
         if(!isConnectionValid()){
             throw new RuntimeException("UserTableManager -> doesUserExist(): Invalid db connection ");
         }

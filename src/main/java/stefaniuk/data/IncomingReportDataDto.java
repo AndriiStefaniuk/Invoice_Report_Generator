@@ -10,7 +10,7 @@ import java.util.List;
  * container class containing data received from client
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ReportDataDto {
+public class IncomingReportDataDto {
 
     @JsonProperty("site_address_array")
     private List<String> siteAddressArray;
@@ -24,10 +24,17 @@ public class ReportDataDto {
     @JsonProperty("second_week_hours")
     private double secondWeekHours;
 
-
-    public ReportDataDto() {
-
+    /**
+     * only for testing purposes, DON'T USE in actual coding
+     */
+    public IncomingReportDataDto(List<String> siteAddressArray, LocalDate periodStartDate, double firstWeekHours, double secondWeekHours) {
+        this.siteAddressArray = siteAddressArray;
+        this.periodStartDate = periodStartDate;
+        this.firstWeekHours = firstWeekHours;
+        this.secondWeekHours = secondWeekHours;
     }
+
+    public IncomingReportDataDto() {}
 
     public List<String> getSiteAddressArray() {
         return siteAddressArray;
@@ -37,6 +44,12 @@ public class ReportDataDto {
         this.siteAddressArray = siteAddressArray;
     }
 
+    /**
+     * returns raw date indicating beginning of report period of two weeks, set by user.
+     * is not guaranteed to be the Monday, can be any day of week.
+     * (each report starts from Monday and ends on Saturday)
+     * @return LocalDate object entered by user, NOT START OF REPORT PERIOD
+     */
     public LocalDate getPeriodStartDate() {
         return periodStartDate;
     }

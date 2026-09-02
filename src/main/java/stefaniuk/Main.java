@@ -1,10 +1,15 @@
 package stefaniuk;
 
+import stefaniuk.data.IncomingReportDataDto;
 import stefaniuk.data.SignInDto;
 import stefaniuk.data.UserRegistrationDto;
+import stefaniuk.data.UserSettings;
 import stefaniuk.database.DBConnector;
 import stefaniuk.database.ReportEntryTableManager;
 import stefaniuk.database.UserTableManager;
+
+import java.time.LocalDate;
+import java.util.Arrays;
 
 /**
  * class containing and managing all end points and requests from client
@@ -14,6 +19,7 @@ public class Main {
     private DBConnector dbConnector;
     private UserTableManager userTableManager;
     private ReportEntryTableManager reportEntryTableManager;
+    private UserSettings user;
 
 
     public static void main(String[] args) {
@@ -21,30 +27,67 @@ public class Main {
 
         main.initialize();
 
-//        main.userTableManager.signUp(new UserRegistrationDto(
-//                "johndoe",                    // userName
-//                "SecureP@ssword123",           // password (raw string input from form)
-//                "John Doe",                    // fullName
-//                "123 Main Street, Toronto, ON",// homeAddress
-//                "123456789 RT0001",           // hstNumber
-//                45.50                          // hourlyRate (double)
-//        ));
-
-//        SignInDto signInDto =  new SignInDto("johndoe", "SecureP@ssword123");
-//        int id = main.userTableManager.getIDbyNameAndPassword(signInDto);
-//
-//        System.out.println(main.userTableManager.fetchUserSettings(id));
+        IncomingReportDataDto reportData = new IncomingReportDataDto(
+                Arrays.asList("123 Main St, New York", "456 Oak Ave, California"),
+                LocalDate.of(2026, 8, 24),
+                40.5,
+                37.0
+        );
 
 
+//        main.reportEntryTableManager.getWeekEndDate(main.reportEntryTableManager.calculatePeriodStartDate(LocalDate.now()));
+    }
 
-//        main.userTableManager.updateUserSettings(1, new UserRegistrationDto(
-//                "Varenukpolslij",
-//                "SecureP@ssword123",
-//                "Andrii Stefaniuk",
-//                "123 Some Street, Toronto, ON",
-//                "123456789 RT0001",
-//                50.50
-//        ));
+
+    private void sighUp(UserRegistrationDto userData){
+        if(userData == null){
+            return;
+        }
+        if(userTableManager.doesUserExist(userData)){
+            // TODO: notify front end that user exists
+            throw new RuntimeException("main -> signUp(): user already exists");
+        }
+        userTableManager.signUp(userData);
+    }
+
+
+    private void signIn(SignInDto signInData){
+        if(signInData == null){
+            return;
+        }
+
+        int id = userTableManager.getIDbyNameAndPassword(signInData);
+        UserSettings user = userTableManager.fetchUserSettings(id);
+
+        if(user == null){
+            // TODO notify frontend that user does not exist, suggest sign up
+            throw new RuntimeException("Main -> signIn(): user does not exist");
+        }
+        initializeUser(user);
+    }
+
+
+    private void updateUserSettings(UserRegistrationDto userData){
+        if (userData == null) {
+            return;
+        }
+
+        if(this.user.getId() <= 0 || user == null){
+            // once signed in, this condition should never come true
+            // it is just to be safe while testing
+            throw new RuntimeException("Main -> updateUserSettings(): user does not exist");
+        }
+        userTableManager.updateUserSettings(this.user.getId(), userData);
+    }
+
+    private void createReport(IncomingReportDataDto reportData){
+        if(reportData == null){
+            return;
+        }
+        if (user == null){
+            return;
+        }
+        reportEntryTableManager.saveReportData(user.getId(), reportData);
     }
 
 
@@ -62,6 +105,15 @@ public class Main {
         this.dbConnector = new DBConnector();
         this.userTableManager = new UserTableManager(dbConnector.getConnection());
         this.reportEntryTableManager = new ReportEntryTableManager(dbConnector.getConnection());
+    }
+
+    /**
+     * initializes the UserSettings class level object representing the user data
+     * such as user_id, hst_number, home_address, name...
+     * @param userSettings populated UserSettings object retrieved from database
+     */
+    private void initializeUser(UserSettings userSettings){
+        this.user = userSettings;
     }
     /**
      * sets the task to close db connection when runtime closes
