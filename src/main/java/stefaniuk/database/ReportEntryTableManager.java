@@ -29,9 +29,7 @@ public class ReportEntryTableManager {
      * @throws IllegalArgumentException if reportData contains periodStartDate overlapping with existing reports
      */
     public void saveReportData(int userID, IncomingReportDataDto reportData){
-        if(!isConnectionValid()){
-            throw new RuntimeException("ReportEntryTableManager -> saveReportData(): Invalid db connection ");
-        }
+        checkConnectionValidity("saveReportData");
 
         if (reportData == null || reportData.getPeriodStartDate() == null) {
             throw new IllegalArgumentException("ReportEntryTableManager -> saveReportData(): " +
@@ -80,9 +78,8 @@ public class ReportEntryTableManager {
      *                          NOTE: periodStartDate must be same as initialReportStartDate
      */
     public void updateReport(int userId, LocalDate initialReportStartDate, IncomingReportDataDto updatedReportData){
-        if(!isConnectionValid()){
-            throw new RuntimeException("ReportEntryTableManager -> updateReport(): Invalid db connection ");
-        }
+        checkConnectionValidity("updateReport");
+
         if(updatedReportData == null || userId <= 0){
             return;
         }
@@ -137,9 +134,8 @@ public class ReportEntryTableManager {
             throw new IllegalArgumentException("ReportEntryTableManager -> deleteReport(): wrong arguments; \n" +
                     "userId = " + userId + "periodStartDate is null = " + (periodStartDate == null));
         }
-        if(!isConnectionValid()){
-            throw new RuntimeException("ReportEntryTableManager -> deleteReport(): Invalid db connection ");
-        }
+        checkConnectionValidity("deleteReport");
+
         if(!isMonday(periodStartDate)){
             periodStartDate = calculatePeriodStartDate(periodStartDate);
         }
@@ -167,9 +163,8 @@ public class ReportEntryTableManager {
      * @return List containing OutgoingReportDataDto objects representing report data stored in the database
      */
     public List<OutgoingReportDataDto> getAllReportList(int userId){
-        if(!isConnectionValid()){
-            throw new RuntimeException("ReportEntryTableManager -> getAllReportList(): Invalid db connection ");
-        }
+        checkConnectionValidity("getAllReportList");
+
         if(userId <= 0) return null;
 
         String sql = "SELECT * FROM report_entries WHERE user_id = ?";
@@ -322,6 +317,17 @@ public class ReportEntryTableManager {
         return day.getDayOfWeek() == DayOfWeek.MONDAY;
     }
 
+
+    /**
+     * checks if connection object (connection to database) is valid
+     * @param callerMethod String object representing the name of method calling this function NO PARATHESIS
+     * @throws RuntimeException if connection is invalid
+     */
+    private void checkConnectionValidity(String callerMethod) {
+        if(!isConnectionValid()){
+            throw new RuntimeException(this.getClass().getName() + " -> " + callerMethod + "(): Invalid db connection ");
+        }
+    }
 
     private boolean isConnectionValid(){
         try {

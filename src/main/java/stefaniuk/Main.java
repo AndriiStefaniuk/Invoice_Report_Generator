@@ -7,6 +7,8 @@ import stefaniuk.data.UserSettings;
 import stefaniuk.database.DBConnector;
 import stefaniuk.database.ReportEntryTableManager;
 import stefaniuk.database.UserTableManager;
+import stefaniuk.excel.ExcelFileWriter;
+import stefaniuk.excel.ReportDataProvider;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -19,6 +21,8 @@ public class Main {
     private DBConnector dbConnector;
     private UserTableManager userTableManager;
     private ReportEntryTableManager reportEntryTableManager;
+    private ExcelFileWriter fileWriter;
+    private ReportDataProvider dataProvider;
     private UserSettings user;
 
 
@@ -35,7 +39,6 @@ public class Main {
         );
 
 
-//        main.reportEntryTableManager.getWeekEndDate(main.reportEntryTableManager.calculatePeriodStartDate(LocalDate.now()));
     }
 
 
@@ -63,6 +66,8 @@ public class Main {
             // TODO notify frontend that user does not exist, suggest sign up
             throw new RuntimeException("Main -> signIn(): user does not exist");
         }
+        //TODO send the token to user client (when ever this user does something, client send this token back,
+        // server looks for this user in database (based on user id) and then does what user wants
         initializeUser(user);
     }
 
@@ -79,6 +84,7 @@ public class Main {
         }
         userTableManager.updateUserSettings(this.user.getId(), userData);
     }
+
 
     private void createReport(IncomingReportDataDto reportData){
         if(reportData == null){

@@ -30,9 +30,8 @@ public class UserTableManager {
             return;
         }
 
-        if(!isConnectionValid()){
-            throw new RuntimeException("UserTableManager -> signUp(): Invalid db connection ");
-        }
+        checkConnectionValidity("signUp");
+
         String sql ="INSERT INTO users (user_name, password, full_name, home_address, hst_number, hourly_rate) " +
                 "VALUES(?, ?, ?, ?, ?, ?)";
 
@@ -68,9 +67,8 @@ public class UserTableManager {
             return -1;
         }
 
-        if(!isConnectionValid()){
-            throw new RuntimeException("UserTableManager -> getIDbyNameAndPassword(): Invalid db connection ");
-        }
+        checkConnectionValidity("getIDbyNameAndPassword");
+
         String sql = "SELECT id FROM users WHERE user_name = ? AND password = ?";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -101,9 +99,7 @@ public class UserTableManager {
         // getIDbyNameAndPassword() returns id -1 if no user found
         if(id == -1) return null;
 
-        if(!isConnectionValid()){
-            throw new RuntimeException("UserTableManager -> fetchUserSettings(): Invalid db connection ");
-        }
+        checkConnectionValidity("fetchUserSettings");
 
         String sql = "SELECT full_name, home_address, hst_number, hourly_rate FROM users WHERE id = ?";
 
@@ -142,9 +138,7 @@ public class UserTableManager {
             return;
         }
 
-        if(!isConnectionValid()){
-            throw new RuntimeException("UserTableManager -> updateUserSettings(): Invalid db connection ");
-        }
+        checkConnectionValidity("updateUserSettings");
 
         String sql = "UPDATE users SET user_name = ?, password = ?, full_name = ?," +
                 " home_address = ?, hst_number = ?, hourly_rate = ? WHERE id = ?";
@@ -175,9 +169,7 @@ public class UserTableManager {
             return false;
         }
 
-        if(!isConnectionValid()){
-            throw new RuntimeException("UserTableManager -> doesUserExist(): Invalid db connection ");
-        }
+        checkConnectionValidity("doesUserExist");
 
         String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE user_name = ?)";
 
@@ -199,6 +191,16 @@ public class UserTableManager {
         return false;
     }
 
+    /**
+     * checks if connection object (connection to database) is valid
+     * @param callerMethod String object representing the name of method calling this function NO PARATHESIS
+     * @throws RuntimeException if connection is invalid
+     */
+    private void checkConnectionValidity(String callerMethod) {
+        if(!isConnectionValid()){
+            throw new RuntimeException(this.getClass().getName() + " -> " + callerMethod + "(): Invalid db connection ");
+        }
+    }
 
     private boolean isConnectionValid(){
         try {
