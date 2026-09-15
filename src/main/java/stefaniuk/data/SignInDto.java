@@ -16,9 +16,7 @@ public class SignInDto {
     @JsonProperty("password")
     private String password;
 
-    /**
-     * only for testing purposes, DON'T USE in actual coding
-     */
+
     public SignInDto(String userName, String password) {
         this.userName = userName;
         this.password = password;

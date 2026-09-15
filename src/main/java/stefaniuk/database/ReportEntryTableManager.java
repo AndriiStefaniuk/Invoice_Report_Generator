@@ -2,6 +2,7 @@ package stefaniuk.database;
 
 import stefaniuk.data.IncomingReportDataDto;
 import stefaniuk.data.OutgoingReportDataDto;
+import stefaniuk.exceptions.ReportOverlapException;
 
 import java.sql.*;
 import java.time.DayOfWeek;
@@ -22,11 +23,14 @@ public class ReportEntryTableManager {
         this.connection = connection;
     }
 
+
     /**
      * stores the report data to database if valid
      * @param userID int object representing user who sends the request to save the report
      * @param reportData populated IncomingReportDataDto object representing data set by user
      * @throws IllegalArgumentException if reportData contains periodStartDate overlapping with existing reports
+     * @throws ReportOverlapException if reportData contains periodStartDate overlapping with existing report
+     * @throws RuntimeException when SQL fails
      */
     public void saveReportData(int userID, IncomingReportDataDto reportData){
         checkConnectionValidity("saveReportData");
@@ -39,8 +43,8 @@ public class ReportEntryTableManager {
         // check if the report period is valid
         LocalDate reportPeriodStart = calculatePeriodStartDate(reportData.getPeriodStartDate());
         if(!isRangeValid(userID, reportPeriodStart)){
-            throw new IllegalArgumentException("ReportEntryTableManager -> saveReportData(): " +
-                    "Invalid report period (part of period is covered by other report(s) ");
+            throw new ReportOverlapException("ReportEntryTableManager -> saveReportData(): " +
+                    "Invalid report period (part of period is covered by other report(s)) ");
         }
         String sql = "INSERT INTO report_entries (user_id, period_start_date, site_addresses, first_week_hours, second_week_hours) " +
                 "VALUES (?, ?, ?, ?, ?)";
@@ -71,23 +75,23 @@ public class ReportEntryTableManager {
 
     /**
      * updates the current record in the database
-     *
      * @param userId int object representing the unique user id number
      * @param initialReportStartDate LocalDate object representing the first day of two week period (the report covering this period will be updated)
      * @param updatedReportData IncomingReportDataDto object containing new data to be stored
      *                          NOTE: periodStartDate must be same as initialReportStartDate
+     * @throws IllegalArgumentException if the initial report start date is not Monday or updated report covers different period than initial report
+     * @throws RuntimeException when SQL fails
      */
     public void updateReport(int userId, LocalDate initialReportStartDate, IncomingReportDataDto updatedReportData){
         checkConnectionValidity("updateReport");
 
-        if(updatedReportData == null || userId <= 0){
-            return;
+        if(updatedReportData == null || userId <= 0 || updatedReportData.getPeriodStartDate() == null){
+            throw new IllegalArgumentException("ReportEntryTableManager -> updateReport(): null inputs or invalid userId");
         }
+
+        // check whether the report starts on Monday
         if(!isMonday(initialReportStartDate)){
-            throw new RuntimeException("ReportEntryTableManager -> updateReport(): initialReportStartDate should be Monday");
-        }
-        if (updatedReportData.getPeriodStartDate() == null) {
-            throw new IllegalArgumentException("ReportEntryTableManager -> updateReport(): Updated report period start date cannot be null");
+            throw new IllegalArgumentException("ReportEntryTableManager -> updateReport(): initialReportStartDate should be Monday");
         }
 
         LocalDate updatedReportStartDate = calculatePeriodStartDate(updatedReportData.getPeriodStartDate());
@@ -128,6 +132,8 @@ public class ReportEntryTableManager {
      * @param userId Int object representing the user unique id number (user whose report to delete)
      * @param periodStartDate LocalDate object representing the first day of two week period
      *                        based on which the report record to delete will be found in database
+     * @throws IllegalArgumentException if invalid id or periodStartDate is null
+     * @throws RuntimeException when SQL fails
      */
     public void deleteReport(int userId, LocalDate periodStartDate){
         if (userId <= 0 || periodStartDate == null){
@@ -157,15 +163,20 @@ public class ReportEntryTableManager {
             throw new RuntimeException(e);
         }
     }
+
+
     /**
      * retrieves all reports stored in database for specific user
      * @param userId int object representing the id of user to look the reports for
      * @return List containing OutgoingReportDataDto objects representing report data stored in the database
+     * @throws RuntimeException when SQL fails
      */
     public List<OutgoingReportDataDto> getAllReportList(int userId){
         checkConnectionValidity("getAllReportList");
 
-        if(userId <= 0) return null;
+        if(userId <= 0){
+            return null;
+        }
 
         String sql = "SELECT * FROM report_entries WHERE user_id = ?";
         try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
@@ -259,16 +270,25 @@ public class ReportEntryTableManager {
 
     /**
      * checks if the report period is valid.
-     * Checks if the period of two weeks, starting from periodStartDate (Monday), is not covered in any other reports
+     * Checks if the period of two weeks, starting from periodStartDate (Monday),
+     * is not covered in any other reports and does not end in the future
      * @param userId int object representing user id to look the reports for
      * @param periodStartDate LocalDate object representing the first day of two week report period (has to be Monday)
-     * @return true if not even a single day (two weeks starting from periodStartDate) is covered by other reports, false otherwise
+     * @return true if not even a single day (two weeks starting from periodStartDate)
+     * is covered by other reports or is in the future, false otherwise
      */
     private boolean isRangeValid(int userId, LocalDate periodStartDate){
         // periodStartDate has to be Monday
         if(!isMonday(periodStartDate)){
             throw new RuntimeException("ReportEntryTableManager -> isRangeValid(): periodStartDate should be Monday");
         }
+
+        // if period ends in the future
+        // plus 12 days because starts on Monday and ends on Saturday of next week
+        if(periodStartDate.plusDays(12).isAfter(LocalDate.now())){
+            return false;
+        }
+
         // check if report with exact same two week period, starting at periodStartDate (Monday), exists
         if(isRangeCovered(userId, periodStartDate)) {
             return false;

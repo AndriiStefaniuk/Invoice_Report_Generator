@@ -21,7 +21,7 @@ public class TokenTableManager {
     private final String alphaNumericCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private final int tokenLength = 32;
 
-    
+
     public TokenTableManager(Connection connection) {
         this.connection = connection;
     }
@@ -31,6 +31,7 @@ public class TokenTableManager {
      * creates a new row in tokens table
      * @param token  String object representing random set of alphaNumeric Characters related to specific user (encrypted userId)
      * @param userId int object representing user identifier in database, not encrypted
+     *
      */
     public void insertToken(String token, int userId) {
         checkConnectionValidity("insertToken");
@@ -63,13 +64,14 @@ public class TokenTableManager {
      *              - contain only English upper and lower case letters and numbers
      *              - not expired
      * @return int object representing the userId (user identifier in database)
-     * or returns 0 if no match found in database
+     * or returns -1 if no match found in database
+     * @throws IllegalStateException if token is expired
      */
     public int getUserId(String token) {
         checkConnectionValidity("getUserId");
 
         if (!isTokenValid(token)) {
-            return 0;
+            return -1;
         }
         if(isTokenExpired(token)){
             throw new IllegalStateException("TokenTableManager -> getUserId(): token expired. ask user to sign in again");
@@ -86,9 +88,9 @@ public class TokenTableManager {
                 }
             }
         } catch (SQLException e) {
-            return 0;
+            throw new RuntimeException(e);
         }
-        return 0;
+        return -1;
     }
 
 
@@ -114,7 +116,7 @@ public class TokenTableManager {
     /**
      * Generates a  random alphanumeric string 32 characters long
      */
-    public String generateRandomString() {
+    public String generateToken() {
         // generates a 32-character unique string (letters and numbers)
         return UUID.randomUUID().toString().replace("-", "");
     }

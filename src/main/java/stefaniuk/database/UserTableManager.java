@@ -24,6 +24,7 @@ public class UserTableManager {
     /**
      * inserts new row into database's user table, creating new user
      * @param userData populated UserRegistrationDto object representing user settings
+     * @throws RuntimeException when SQL fails
      */
     public void signUp(UserRegistrationDto userData){
         if(userData == null){
@@ -61,6 +62,7 @@ public class UserTableManager {
      * searches for user id based on username and password (provided when you sign in)
      * @param singInData populated SignInDto object containing the username and password
      * @return int representing the id, -1 if no username or password found in the database
+     * @throws RuntimeException when SQL fails
      */
     public int getIDbyNameAndPassword(SignInDto singInData){
         if(singInData == null){
@@ -94,6 +96,7 @@ public class UserTableManager {
      * fetches the user settings for user with corresponding id (id passed as argument)
      * @param id int representing the id of user to search the settings for
      * @return populated UserSettings objects containing user settings or null, if no user exists
+     * @throws RuntimeException when SQL fails
      */
     public UserSettings fetchUserSettings(int id){
         // getIDbyNameAndPassword() returns id -1 if no user found
@@ -132,10 +135,12 @@ public class UserTableManager {
      * updates existing row for the user in the users table in database
      * @param userID unique ID for the user for who you change data
      * @param userData populated UserRegistrationDto object representing new data
+     * @throws IllegalArgumentException if userData is null or invalid id
+     * @throws RuntimeException when SQL fails
      */
     public void updateUserSettings(int userID, UserRegistrationDto userData){
         if(userData == null || userID <= 0){
-            return;
+            throw new IllegalArgumentException("UserTableManager -> updateUserSettings(): null inputs or invalid userId");
         }
 
         checkConnectionValidity("updateUserSettings");
@@ -163,6 +168,7 @@ public class UserTableManager {
     /**
      * checks whether the user already exists in the database
      * @return true if user exists in database
+     * @throws RuntimeException when SQL fails
      */
     public boolean doesUserExist(UserRegistrationDto userData){
         if(userData == null){
@@ -186,7 +192,7 @@ public class UserTableManager {
 
             }
         } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
+            throw new RuntimeException(sqlException);
         }
         return false;
     }
