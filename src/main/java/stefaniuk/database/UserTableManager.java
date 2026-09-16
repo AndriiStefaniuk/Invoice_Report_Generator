@@ -3,6 +3,7 @@ package stefaniuk.database;
 import stefaniuk.data.SignInDto;
 import stefaniuk.data.UserRegistrationDto;
 import stefaniuk.data.UserSettings;
+import stefaniuk.data.UserSettingsResponseDto;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -120,6 +121,47 @@ public class UserTableManager {
                             resultSet.getString("hst_number"),
                             resultSet.getDouble("hourly_rate"));
 
+                } else {
+                    return null;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+
+    /**
+     * fetches the user settings for user with corresponding id (id passed as argument)
+     * used when fetching user settings to send them to the client
+     * @param id int representing the id of user to search the settings for
+     * @return UserSettingsResponseDto objects containing user settings or null, if no user exists
+     * @throws RuntimeException when SQL fails
+     */
+    public UserSettingsResponseDto fetchUserSettingsDto(int id){
+        // getIDbyNameAndPassword() returns id -1 if no user found
+        if(id == -1) return null;
+
+        checkConnectionValidity("fetchUserSettings");
+
+        String sql = "SELECT user_name, full_name, home_address, hst_number, hourly_rate FROM users WHERE id = ?";
+
+        try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+
+            // fills in ? placeholders in sql String with id values
+            preparedStatement.setInt(1, id);
+
+            try(ResultSet resultSet = preparedStatement.executeQuery()){
+                if(resultSet.next()){
+                    String userName = resultSet.getString("user_name");
+                    UserSettings settings = new UserSettings(id,
+                            resultSet.getString("full_name"),
+                            resultSet.getString("home_address"),
+                            resultSet.getString("hst_number"),
+                            resultSet.getDouble("hourly_rate"));
+
+                    return new UserSettingsResponseDto(userName, settings);
                 } else {
                     return null;
                 }

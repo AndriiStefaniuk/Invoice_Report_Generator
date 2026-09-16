@@ -3,15 +3,14 @@ package stefaniuk.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import stefaniuk.data.IncomingReportDataDto;
-import stefaniuk.data.SignInDto;
-import stefaniuk.data.UserRegistrationDto;
+import stefaniuk.data.*;
 import stefaniuk.exceptions.ReportOverlapException;
 import stefaniuk.exceptions.TokenExpiredException;
 import stefaniuk.exceptions.UserAlreadyExistsException;
 import stefaniuk.exceptions.UserNotFoundException;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * end point class used to handle incoming requests from user and redirect them to Service class (class executor)
@@ -30,14 +29,15 @@ public class RequestHandler {
     /**
      * redirects the request to sign up to Service class
      * @param userDataJSON String object in JSON format containing UserRegistrationDto object
+     * @return SignInResponseDto object representing the token (generated for the user) and user settings
      */
-    public void signUp(String userDataJSON){
+    public SignInResponseDto signUp(String userDataJSON){
         if(!isValidString(userDataJSON)){
-            return;
+            return null;
         }
         try {
             UserRegistrationDto userData = objectMapper.readValue(userDataJSON, UserRegistrationDto.class);
-            service.signUp(userData);
+            return service.signUp(userData);
 
         } catch (JsonProcessingException e) {
             // TODO: notify client that the JSON format is invalid (HTTP 400)
@@ -61,16 +61,16 @@ public class RequestHandler {
     /**
      * redirects the request to sign in to Service class
      * @param signInDataJSON String object in JSON format containing SignInDto object
+     * @return SignInResponseDto object representing the token (generated for the user) and user settings
      */
-    public void signIn(String signInDataJSON){
+    public SignInResponseDto signIn(String signInDataJSON){
         if(!isValidString(signInDataJSON)){
-            return;
+            return null;
         }
         try {
-            SignInDto userData = objectMapper.readValue(signInDataJSON, SignInDto.class);
-            String token = service.signIn(userData);
+            SignInDto signInData = objectMapper.readValue(signInDataJSON, SignInDto.class);
+            return service.signIn(signInData);
             //TODO: display the main page to user
-            // TODO: return the token to client and return the userSettings to display as well
 
         } catch (JsonProcessingException e) {
             // TODO: notify client that the JSON format is invalid (HTTP 400)
@@ -93,9 +93,9 @@ public class RequestHandler {
      * @param updatedUserDataJSON String object in JSON format containing user's token and
      *                            the UserRegistrationDto containing the updated user data
      */
-    public void updateUserSettings(String updatedUserDataJSON){
+    public UserSettingsResponseDto updateUserSettings(String updatedUserDataJSON){
         if(!isValidString(updatedUserDataJSON)){
-            return;
+            return null;
         }
 
         String token;
@@ -116,7 +116,8 @@ public class RequestHandler {
 
         // update the data in the database
         try {
-            service.updateUserSettings(token, updatedUserData);
+            // TODO send updated the settings to client
+            return service.updateUserSettings(token, updatedUserData);
 
         } catch(TokenExpiredException e){
             // TODO suggest to sign in again
@@ -133,10 +134,11 @@ public class RequestHandler {
     /**
      * redirects the request to save a new report to the Service class
      * @param reportDataJSON String object in JSON format containing token and IncomingReportDataDto
+     * @return Boolean object representing whether the saving operation was successful or not
      */
-    public void saveReport(String reportDataJSON){
+    public boolean saveReport(String reportDataJSON){
         if(!isValidString(reportDataJSON)){
-            return;
+            return false;
         }
 
         try {
@@ -146,6 +148,7 @@ public class RequestHandler {
             IncomingReportDataDto reportData = objectMapper.treeToValue(reportNode, IncomingReportDataDto.class);
 
             service.saveReport(token, reportData);
+            return true;
 
         } catch (JsonProcessingException e) {
             // TODO: notify client that the JSON format is invalid (HTTP 400)
@@ -170,10 +173,11 @@ public class RequestHandler {
     /**
      * redirects the request to update an existing report to the Service class
      * @param updatedReportJSON String object in JSON format containing token, initial date, and updated report
+     * @return boolean representing whether the updating operation was successful or not
      */
-    public void updateReport(String updatedReportJSON){
+    public boolean updateReport(String updatedReportJSON){
         if(!isValidString(updatedReportJSON)){
-            return;
+            return false;
         }
 
         try {
@@ -184,6 +188,8 @@ public class RequestHandler {
             IncomingReportDataDto updatedData = objectMapper.treeToValue(reportNode, IncomingReportDataDto.class);
 
             service.updateReport(token, initialDate, updatedData);
+
+            return true;
 
         } catch (JsonProcessingException e) {
             // TODO: notify client that the JSON format is invalid (HTTP 400)
@@ -204,10 +210,11 @@ public class RequestHandler {
     /**
      * redirects the request to delete an existing report to the Service class
      * @param incomingDataJSON String object in JSON format containing token and the start date of report to delete
+     * @return boolean representing whether the deletion operation was successful or not
      */
-    public void deleteReport(String incomingDataJSON){
+    public boolean deleteReport(String incomingDataJSON){
         if(!isValidString(incomingDataJSON)){
-            return;
+            return false;
         }
 
         try{
@@ -216,6 +223,7 @@ public class RequestHandler {
             LocalDate periodStartDate = objectMapper.convertValue(rootNode.path("report_start_date"), LocalDate.class);
 
             service.deleteReport(token, periodStartDate);
+            return true;
 
         } catch (JsonProcessingException e) {
             // TODO: notify client that the JSON format is invalid (HTTP 400)
@@ -224,7 +232,7 @@ public class RequestHandler {
             // TODO suggest to sign in again
             throw new RuntimeException(e);
         } catch (IllegalArgumentException e) {
-            // TODO display pop up that failed to update report
+            // TODO display pop up that failed to delete report
             throw new RuntimeException(e);
         } catch (Exception e) {
             // TODO: notify client "Server is currently unavailable, please try again later" (HTTP 500)
@@ -234,11 +242,13 @@ public class RequestHandler {
 
     /**
      * redirects the request to fetch all stored reports for the user to Service class
+     *
      * @param tokenJSON String object in JSON format containing token value
+     * @return List of OutgoingReportDataDto objects representing all reports stored in the database for specific user
      */
-    public void getAllReportList(String tokenJSON){
+    public List<OutgoingReportDataDto> getAllReportList(String tokenJSON){
         if(!isValidString(tokenJSON)){
-            return;
+            return null;
         }
 
         try {
@@ -246,7 +256,7 @@ public class RequestHandler {
             String token = rootNode.path("token").asText();
 
             // TODO return the list off all reports as JSON
-            service.getAllReportList(token);
+            return service.getAllReportList(token);
 
         } catch (JsonProcessingException e) {
             // TODO: notify client that the JSON format is invalid (HTTP 400)

@@ -27,7 +27,7 @@ public class Service {
     private ReportDataProvider dataProvider;
 
     // temporary objets, used for testing purposes
-    private String token;
+   // private String token;
 
 
     public Service(UserTableManager userTableManager, ExcelFileWriter fileWriter,
@@ -42,10 +42,11 @@ public class Service {
     /**
      * creates a new entry in the Database, storing the user sign in information
      * @param userData populated UserRegistrationDto object representing the user settings (username, password, full name...)
+     * @return SignInResponseDto object representing the token (generated for the user) and user settings
      * @throws UserAlreadyExistsException if user account already exists in the database
      * @throws IllegalArgumentException if userData (passed as an argument) contains invalid username or password
      */
-    public void signUp(UserRegistrationDto userData){
+    public SignInResponseDto signUp(UserRegistrationDto userData){
         if (userData == null) {
             throw new IllegalArgumentException("Main -> signUp(): userData can't be null");
         }
@@ -56,7 +57,7 @@ public class Service {
         userTableManager.signUp(userData);
 
         // sign in generates the token for user and displays the main page
-        this.signIn(new SignInDto(userData.getUserName(), userData.getPassword()));
+        return this.signIn(new SignInDto(userData.getUserName(), userData.getPassword()));
     }
 
 
@@ -64,11 +65,11 @@ public class Service {
      * checks if the user with given info exists in the database
      * if it does, generates the token string and assigns it to the user
      * @param signInData SignInDto object containing the username and password
-     * @return String object representing the token (generated for the user)
+     * @return SignInResponseDto object representing the token (generated for the user) and user settings
      * @throws IllegalArgumentException if signInData (passed as an argument) contains invalid username or password
      * @throws UserNotFoundException if no user found in database
      */
-    public String signIn(SignInDto signInData){
+    public SignInResponseDto signIn(SignInDto signInData){
         if(signInData == null){
             throw new IllegalArgumentException("Main -> sighIn(): signInData (passed as argument) is null");
         }
@@ -77,20 +78,17 @@ public class Service {
         if(userId <= 0){
             throw new IllegalArgumentException("Main -> sighIn(): invalid username or password (no such match found in the database)");
         }
-        UserSettings user = getUser(userId);
 
-        if(user == null){
-            // TODO notify frontend that user does not exist, suggest sign up
-            throw new UserNotFoundException("Main -> signIn(): user does not exist");
+        UserSettingsResponseDto userSettings = userTableManager.fetchUserSettingsDto(userId);
+        if(userSettings == null){
+            throw new UserNotFoundException("Service -> signIn(): user does not exist");
         }
 
         // assign the token to user and store it in table
         String token = tokenTableManager.generateToken();
         tokenTableManager.insertToken(token, userId);
 
-        // TODO: return the token to client and return the userSettings to display as well
-        this.token = token;
-        return token;
+        return new SignInResponseDto(userSettings, token);
     }
 
 
@@ -98,10 +96,11 @@ public class Service {
      * changes the row in database containing userSettings data
      * @param token the unique 32 character authentication token assigned to the user
      * @param userData UserRegistrationDto object containing updated user settings
+     * @return UserSettingsResponseDto containing the user settings (to be displayed for the user)
      * @throws TokenExpiredException if token is expired
      * @throws IllegalArgumentException indicating failure to update settings (invalid updated user data)
      */
-    public void updateUserSettings(String token, UserRegistrationDto userData){
+    public UserSettingsResponseDto updateUserSettings(String token, UserRegistrationDto userData){
         if (userData == null || token == null || token.isBlank()) {
             throw new IllegalArgumentException("Service -> updateUserSettings(): invalid inputs");
         }
@@ -111,6 +110,8 @@ public class Service {
             throw new TokenExpiredException("Service -> updateUserSettings(): invalid token");
         }
         userTableManager.updateUserSettings(userId, userData);
+
+        return this.getUserSettings(token);
     }
 
 
@@ -188,16 +189,17 @@ public class Service {
      * @param token unique 32 character authentication token assigned to the user
      * @return List of OutgoingReportDataDto objects representing all reports stored in the database for specific user
      * @throws TokenExpiredException if token is expired
+     * @throws IllegalArgumentException if inputs (arguments) are invalid
      */
     public List<OutgoingReportDataDto> getAllReportList(String token){
         if(token == null || token.isBlank()){
-            return null;
+            throw new IllegalArgumentException("Service -> getAllReportList(): invalid inputs");
         }
 
         int userId = getIdByToken(token);
         if(userId <= 0){
             // token might be expired, suggest sign in again
-            throw new TokenExpiredException("Service -> deleteReport(): invalid token");
+            throw new TokenExpiredException("Service -> getAllReportList(): invalid token");
         }
 
         return reportEntryTableManager.getAllReportList(userId);
@@ -206,15 +208,39 @@ public class Service {
 
     /**
      * fetches the user settings, such as user's full name, HST number, hourly rate... from database
+     * @param token unique 32 character authentication token assigned to the user
+     * @return populated UserSettingsResponseDto object or null if no user with provided ID is found
+      * @throws TokenExpiredException if token is expired
+      * @throws IllegalArgumentException if inputs (arguments) are invalid
+     */
+    public UserSettingsResponseDto getUserSettings(String token){
+        if(token == null || token.isBlank()){
+            throw new IllegalArgumentException("Service -> getUserSettings(): invalid inputs");
+        }
+
+        int userId = getIdByToken(token);
+        if (userId <= 0){
+            // token might be expired, suggest sign in again
+            throw new TokenExpiredException("Service -> getUserSettings(): invalid token");
+        }
+
+        return this.userTableManager.fetchUserSettingsDto(userId);
+    }
+
+
+
+    /**
+     * fetches the user settings, such as user's full name, HST number, hourly rate... from database
      * @param userId int object representing the unique number (user identifier in database)
      * @return populated UserSettings object or null if no user with provided ID is found
      */
-    private UserSettings getUser(int userId){
+    public UserSettings getUserSettings(int userId){
         if (userId <= 0){
             return null;
         }
         return this.userTableManager.fetchUserSettings(userId);
     }
+
 
     /**
      * returns userId that corresponds to the provided token
