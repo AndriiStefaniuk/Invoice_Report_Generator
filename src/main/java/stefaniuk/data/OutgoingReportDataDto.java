@@ -114,4 +114,18 @@ public class OutgoingReportDataDto {
     public void setSecondWeekHours(double secondWeekHours) {
         this.secondWeekHours = secondWeekHours;
     }
+
+    @Override
+    public String toString() {
+        return "OutgoingReportDataDto{" +
+                "id=" + id +
+                ", siteAddressArray=" + siteAddressArray +
+                ", firstWeekStartDate=" + firstWeekStartDate +
+                ", firstWeekEndDate=" + firstWeekEndDate +
+                ", firstWeekHours=" + firstWeekHours +
+                ", secondWeekStartDate=" + secondWeekStartDate +
+                ", secondWeekEndDate=" + secondWeekEndDate +
+                ", secondWeekHours=" + secondWeekHours +
+                '}';
+    }
 }

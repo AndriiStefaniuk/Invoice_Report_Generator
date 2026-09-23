@@ -13,7 +13,7 @@ import java.util.List;
 public class IncomingReportDataDto {
 
     @JsonProperty("site_address_array")
-    private List<String> siteAddressArray;
+    private List<String> siteAddresses;
 
     @JsonProperty("period_start_date")
     private LocalDate periodStartDate;
@@ -27,8 +27,8 @@ public class IncomingReportDataDto {
     /**
      * only for testing purposes, DON'T USE in actual coding
      */
-    public IncomingReportDataDto(List<String> siteAddressArray, LocalDate periodStartDate, double firstWeekHours, double secondWeekHours) {
-        this.siteAddressArray = siteAddressArray;
+    public IncomingReportDataDto(List<String> siteAddresses, LocalDate periodStartDate, double firstWeekHours, double secondWeekHours) {
+        this.siteAddresses = siteAddresses;
         this.periodStartDate = periodStartDate;
         this.firstWeekHours = firstWeekHours;
         this.secondWeekHours = secondWeekHours;
@@ -36,12 +36,12 @@ public class IncomingReportDataDto {
 
     public IncomingReportDataDto() {}
 
-    public List<String> getSiteAddressArray() {
-        return siteAddressArray;
+    public List<String> getSiteAddresses() {
+        return siteAddresses;
     }
 
-    public void setSiteAddressArray(List<String> siteAddressArray) {
-        this.siteAddressArray = siteAddressArray;
+    public void setSiteAddresses(List<String> siteAddresses) {
+        this.siteAddresses = siteAddresses;
     }
 
     /**

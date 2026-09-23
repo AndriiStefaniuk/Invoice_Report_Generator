@@ -172,7 +172,8 @@ public class RequestHandler {
 
     /**
      * redirects the request to update an existing report to the Service class
-     * @param updatedReportJSON String object in JSON format containing token, initial date, and updated report
+     * @param updatedReportJSON String object in JSON format containing token, initial date,
+     *                          and updated report in IncomingReportDataDto object
      * @return boolean representing whether the updating operation was successful or not
      */
     public boolean updateReport(String updatedReportJSON){

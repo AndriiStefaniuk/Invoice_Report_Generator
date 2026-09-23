@@ -27,13 +27,12 @@ public class Service {
     private ReportDataProvider dataProvider;
 
     // temporary objets, used for testing purposes
-   // private String token;
+    // private String token;
 
 
-    public Service(UserTableManager userTableManager, ExcelFileWriter fileWriter,
-                   TokenTableManager tokenTableManager, ReportEntryTableManager reportEntryTableManager) {
+    public Service(UserTableManager userTableManager, TokenTableManager tokenTableManager,
+                   ReportEntryTableManager reportEntryTableManager) {
         this.userTableManager = userTableManager;
-        this.fileWriter = fileWriter;
         this.tokenTableManager = tokenTableManager;
         this.reportEntryTableManager = reportEntryTableManager;
     }

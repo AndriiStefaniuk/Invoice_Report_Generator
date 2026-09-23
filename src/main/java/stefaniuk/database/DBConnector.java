@@ -10,9 +10,9 @@ import java.sql.SQLException;
 public class DBConnector {
 
     private Connection connection;
-    private final String url = "jdbc:postgresql://localhost:5432/uhtam_reporting_app";
-    private final String user = "postgres";
-    private final String password = "Stefaniuk_07";
+    private final String url = System.getenv("DB_URL");
+    private final String user = System.getenv("DB_USER");
+    private final String password = System.getenv("DB_PASSWORD");
 
     public DBConnector(){
         establishConnection();

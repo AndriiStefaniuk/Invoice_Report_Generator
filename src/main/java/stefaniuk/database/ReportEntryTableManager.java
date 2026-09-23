@@ -57,7 +57,7 @@ public class ReportEntryTableManager {
             preparedStatement.setDate(2, Date.valueOf(reportPeriodStart));
 
             // convert List to array of Strings
-            String[] addressArray = reportData.getSiteAddressArray().toArray(new String[0]);
+            String[] addressArray = reportData.getSiteAddresses().toArray(new String[0]);
             //  Wrap the Java array into a SQL TEXT Array
             Array sqlArray = connection.createArrayOf("text", addressArray);
             preparedStatement.setArray(3, sqlArray);
@@ -107,7 +107,7 @@ public class ReportEntryTableManager {
 
         try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
 
-            String[] siteAddresses = updatedReportData.getSiteAddressArray().toArray(new String[0]);
+            String[] siteAddresses = updatedReportData.getSiteAddresses().toArray(new String[0]);
             Array siteAddressesArray = connection.createArrayOf("text", siteAddresses);
             preparedStatement.setArray(1, siteAddressesArray);
 
