@@ -4,6 +4,8 @@ import stefaniuk.data.IncomingReportDataDto;
 import stefaniuk.data.OutgoingReportDataDto;
 import stefaniuk.exceptions.ReportOverlapException;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -28,11 +30,12 @@ public class ReportEntryTableManager {
      * stores the report data to database if valid
      * @param userID int object representing user who sends the request to save the report
      * @param reportData populated IncomingReportDataDto object representing data set by user
+     * @param hourlyRate double object representing the hourly rate of worker
      * @throws IllegalArgumentException if reportData contains periodStartDate overlapping with existing reports
      * @throws ReportOverlapException if reportData contains periodStartDate overlapping with existing report
      * @throws RuntimeException when SQL fails
      */
-    public void saveReportData(int userID, IncomingReportDataDto reportData){
+    public void saveReportData(int userID, IncomingReportDataDto reportData, double hourlyRate){
         checkConnectionValidity("saveReportData");
 
         if (reportData == null || reportData.getPeriodStartDate() == null) {
@@ -46,8 +49,8 @@ public class ReportEntryTableManager {
             throw new ReportOverlapException("ReportEntryTableManager -> saveReportData(): " +
                     "Invalid report period (part of period is covered by other report(s)) ");
         }
-        String sql = "INSERT INTO report_entries (user_id, period_start_date, site_addresses, first_week_hours, second_week_hours) " +
-                "VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO report_entries (user_id, period_start_date, site_addresses, first_week_hours, second_week_hours, amount) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
 
         try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
             // fills in ? placeholders in sql String with values
@@ -64,8 +67,9 @@ public class ReportEntryTableManager {
 
             preparedStatement.setDouble(4, reportData.getFirstWeekHours());
             preparedStatement.setDouble(5, reportData.getSecondWeekHours());
+            preparedStatement.setString(6, getAmount(reportData, hourlyRate));
 
-           preparedStatement.executeUpdate();
+            preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -79,10 +83,11 @@ public class ReportEntryTableManager {
      * @param initialReportStartDate LocalDate object representing the first day of two week period (the report covering this period will be updated)
      * @param updatedReportData IncomingReportDataDto object containing new data to be stored
      *                          NOTE: periodStartDate must be same as initialReportStartDate
+     * @param hourlyRate double object representing the hourly rate of worker
      * @throws IllegalArgumentException if the initial report start date is not Monday or updated report covers different period than initial report
      * @throws RuntimeException when SQL fails
      */
-    public void updateReport(int userId, LocalDate initialReportStartDate, IncomingReportDataDto updatedReportData){
+    public void updateReport(int userId, LocalDate initialReportStartDate, IncomingReportDataDto updatedReportData, double hourlyRate){
         checkConnectionValidity("updateReport");
 
         if(updatedReportData == null || userId <= 0 || updatedReportData.getPeriodStartDate() == null){
@@ -102,7 +107,8 @@ public class ReportEntryTableManager {
         String sql = "UPDATE report_entries SET " +
                 "site_addresses = ?, " +
                 "first_week_hours = ?, " +
-                "second_week_hours = ? " +
+                "second_week_hours = ?, " +
+                "amount = ? " +
                 "WHERE user_id = ? AND period_start_date = ?";
 
         try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
@@ -113,8 +119,11 @@ public class ReportEntryTableManager {
 
             preparedStatement.setDouble(2, updatedReportData.getFirstWeekHours());
             preparedStatement.setDouble(3, updatedReportData.getSecondWeekHours());
-            preparedStatement.setInt(4, userId);
-            preparedStatement.setDate(5, Date.valueOf(initialReportStartDate));
+
+            preparedStatement.setString(4, getAmount(updatedReportData, hourlyRate));
+            preparedStatement.setInt(5, userId);
+
+            preparedStatement.setDate(6, Date.valueOf(initialReportStartDate));
 
             int rowsUpdated = preparedStatement.executeUpdate();
 
@@ -200,9 +209,11 @@ public class ReportEntryTableManager {
 
                     double firstWeekHour = resultSet.getDouble("first_week_hours");
                     double secondWeekHour = resultSet.getDouble("second_week_hours");
+                    String totalAmount = resultSet.getString("amount");
+
 
                     reportDataList.add(new OutgoingReportDataDto(id, siteAddressesList, firstWeekStartDate, firstWeekEndDate,
-                            firstWeekHour, secondWeekStartDate, secondWeekEndDate, secondWeekHour));
+                            firstWeekHour, secondWeekStartDate, secondWeekEndDate, secondWeekHour, totalAmount));
                 }
             }
             return reportDataList;
@@ -333,6 +344,26 @@ public class ReportEntryTableManager {
     }
 
 
+    /**
+     * calculates the two week amount earned with HST added
+     * @param reportData populated IncomingReportDataDto object containing data about the report
+     * @param hourlyRate double object containing the hourly rate
+     * @return String object representing the total amount for two weeks with HST added
+     */
+    private String getAmount(IncomingReportDataDto reportData, double hourlyRate) {
+        double totalHours = reportData.getFirstWeekHours() + reportData.getSecondWeekHours();
+
+        BigDecimal hours = BigDecimal.valueOf(totalHours);
+        BigDecimal rate = BigDecimal.valueOf(hourlyRate);
+
+        BigDecimal subtotal = hours.multiply(rate);
+        BigDecimal hstAmount = subtotal.multiply(new BigDecimal("0.13")).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal totalWithHst = subtotal.add(hstAmount).setScale(2, RoundingMode.HALF_UP);
+
+        return totalWithHst.toString();
+    }
+
+
     private boolean isMonday(LocalDate day){
         return day.getDayOfWeek() == DayOfWeek.MONDAY;
     }
@@ -357,3 +388,4 @@ public class ReportEntryTableManager {
         }
     }
 }
+

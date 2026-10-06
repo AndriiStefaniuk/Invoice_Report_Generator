@@ -93,7 +93,7 @@ public class Main {
     }
 
 
-    private void initializeTestingMethods(){
+    private void initializeTestingMethods() {
 
         UserSettings userSettings = new UserSettings(
                 1,
@@ -107,24 +107,21 @@ public class Main {
         reportData.setSiteAddresses(List.of(
                 "100 King Street West, Toronto, ON",
                 "333 Bay Street, Toronto, ON"
-
         ));
         reportData.setPeriodStartDate(LocalDate.of(2026, 8, 31));
         reportData.setFirstWeekHours(40.0);
         reportData.setSecondWeekHours(37.5);
 
-
         ReportDataProvider rpd = new ReportDataProvider(userSettings, reportData);
 
+        System.out.println("Week 1 Hours Formatted: " + rpd.getFirstWeekHours());
+        System.out.println("Week 2 Hours Formatted: " + rpd.getSecondWeekHours());
+        System.out.println("Total Hours Formatted: " + rpd.getTotalHours());
+
         ExcelFileWriter fileWriter = new ExcelFileWriter(rpd);
-
         File reportFile = fileWriter.getReportFile();
-        try (FileInputStream fileInputStream = new FileInputStream(reportFile)){
 
-            
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        System.out.println("Excel file successfully generated at: " + reportFile.getAbsolutePath());
     }
 }
 

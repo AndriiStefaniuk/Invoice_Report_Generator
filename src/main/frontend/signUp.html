@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Chuhax</title>
+    <style>
+        :root {
+            --bg-color: #E8DECF;
+            --primary-blue: #0B2A4A;
+            --input-bg: rgba(255, 255, 255, 0.4);
+            --border-color: #5A6D80;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-blue);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            padding: 30px 20px;
+            box-sizing: border-box;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            max-width: 120px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 16px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            min-width: 45%;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            color: #333;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: var(--primary-blue);
+            border-width: 2px;
+            padding: 13px 15px; /* offset the 2px border so it doesn't jump */
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            margin-top: 25px;
+            background-color: var(--primary-blue);
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(11, 42, 74, 0.2);
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .btn-submit:hover {
+            background-color: #081f38;
+        }
+
+        .btn-submit:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(11, 42, 74, 0.2);
+        }
+
+        ::placeholder {
+            color: #666;
+            opacity: 1;
+        }
+
+        /* Responsive Breakpoints */
+        @media screen and (max-width: 380px) {
+            .form-row .form-group {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo-container">
+        <img src="/images_temporary/logo.png" alt="Logo" class="logo">
+    </div>
+
+    <h1>Create New Account</h1>
+
+    <form action="#" method="POST">
+        <!-- Personal Info Section -->
+        <h2>Personal Info</h2>
+
+        <div class="form-row">
+            <div class="form-group">
+                <input type="text" name="firstName" placeholder="First Name" required>
+            </div>
+            <div class="form-group">
+                <input type="text" name="lastName" placeholder="Last Name" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <input type="email" name="email" placeholder="Email / Username" required>
+        </div>
+
+        <div class="form-group">
+            <input type="password" name="password" placeholder="Password" required>
+        </div>
+
+        <div class="form-group">
+            <input type="password" name="confirmPassword" placeholder="Confirm Password" required>
+        </div>
+
+        <!-- Business & Billing Details Section -->
+        <h2>Business & Billing Details</h2>
+
+        <div class="form-group">
+            <input type="text" name="hstNumber" placeholder="HST Number">
+        </div>
+
+        <div class="form-group">
+            <input type="number" name="hourlyRate" placeholder="Default Hourly Rate ($)" step="0.01" min="0">
+        </div>
+
+        <div class="form-group">
+            <textarea name="address" placeholder="Home/Business Address&#10;(Street, City, Province, Postal Code)"></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">Register & Save</button>
+    </form>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - Chuhax</title>
+  <style>
+    :root {
+        --bg-color: #E8DECF;
+        --primary-blue: #0B2A4A;
+        --input-bg-active: rgba(255, 255, 255, 0.5);
+        --border-color: #0B2A4A;
+        --warning-red: #B3261E;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--primary-blue);
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+    }
+
+    .app-container {
+        width: 100%;
+        max-width: 480px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--bg-color);
+        min-height: 100vh;
+    }
+
+    /* Top Navigation Bar */
+    .top-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid rgba(11, 42, 74, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .top-nav a {
+        text-decoration: none;
+        color: var(--primary-blue);
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .nav-title {
+        font-size: 18px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .content {
+        padding: 0 20px 40px 20px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    /* Section Headers with Edit Buttons */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 25px 0 10px 0;
+    }
+
+    h2 {
+        font-size: 15px;
+        font-weight: 800;
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    .btn-edit {
+        background: none;
+        border: 1px solid var(--primary-blue);
+        color: var(--primary-blue);
+        border-radius: 12px;
+        padding: 4px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-edit:hover {
+        background-color: rgba(11, 42, 74, 0.1);
+    }
+
+    /* Fieldset and Input Styling */
+    .custom-fieldset {
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 8px 12px;
+        margin: 0 0 15px 0;
+        background-color: transparent;
+        position: relative;
+        transition: background-color 0.3s ease;
+    }
+
+    .custom-fieldset legend {
+        font-size: 12px;
+        color: var(--primary-blue);
+        padding: 0 5px;
+        font-weight: 600;
+    }
+
+    /* Read-only State (Locked) */
+    .custom-fieldset input,
+    .custom-fieldset textarea {
+        width: 100%;
+        border: none;
+        background: transparent;
+        font-size: 15px;
+        color: var(--primary-blue);
+        outline: none;
+        padding: 5px 0;
+        font-family: inherit;
+        box-sizing: border-box;
+        resize: none;
+    }
+
+    .custom-fieldset input:read-only,
+    .custom-fieldset textarea:read-only {
+        opacity: 0.7;
+        pointer-events: none;
+    }
+
+    /* Editable State (Unlocked) */
+    .custom-fieldset.editing {
+        background-color: var(--input-bg-active);
+        border-width: 2px;
+        padding: 7px 11px; /* offset border width to prevent layout shift */
+    }
+
+    .custom-fieldset.editing input,
+    .custom-fieldset.editing textarea {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Buttons */
+    .btn-save {
+        width: 100%;
+        padding: 16px;
+        background-color: var(--primary-blue);
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 600;
+        text-transform: uppercase;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(11, 42, 74, 0.2);
+        transition: background-color 0.2s ease, transform 0.1s ease;
+        margin-top: 30px;
+        display: none; /* Hidden by default until editing starts */
+    }
+
+    .btn-save:hover {
+        background-color: #081f38;
+    }
+
+    .btn-save:active {
+        transform: translateY(2px);
+    }
+
+    .btn-logout {
+        width: 100%;
+        padding: 16px;
+        background-color: transparent;
+        color: var(--warning-red);
+        font-size: 15px;
+        font-weight: 600;
+        text-transform: uppercase;
+        border: 2px solid var(--warning-red);
+        border-radius: 25px;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: background-color 0.2s ease;
+    }
+
+    .btn-logout:hover {
+        background-color: rgba(179, 38, 30, 0.1);
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <div class="top-nav">
+    <a href="dashboard.html">&larr;</a>
+    <div class="nav-title">Settings</div>
+    <div style="width: 24px;"></div> <!-- Spacer for alignment -->
+  </div>
+
+  <div class="content">
+
+    <!-- Profile Details Section -->
+    <div class="section-header">
+      <h2>Profile Details</h2>
+      <button type="button" class="btn-edit" onclick="toggleEdit('profile')">EDIT</button>
+    </div>
+
+    <fieldset class="custom-fieldset" id="fs-fullName">
+      <legend>Full Name</legend>
+      <input type="text" id="fullName" value="Andrii Stefaniuk" readonly>
+    </fieldset>
+
+    <fieldset class="custom-fieldset" id="fs-homeAddress">
+      <legend>Home/Business Address</legend>
+      <textarea id="homeAddress" rows="2" readonly>123 Mississauga Rd&#10;Mississauga, ON L5A 1V9</textarea>
+    </fieldset>
+
+    <!-- Billing & Tax Section -->
+    <div class="section-header">
+      <h2>Billing & Tax</h2>
+      <button type="button" class="btn-edit" onclick="toggleEdit('billing')">EDIT</button>
+    </div>
+
+    <fieldset class="custom-fieldset" id="fs-hstNumber">
+      <legend>HST Number</legend>
+      <input type="text" id="hstNumber" value="123456789 RT0001" readonly>
+    </fieldset>
+
+    <fieldset class="custom-fieldset" id="fs-hourlyRate">
+      <legend>Default Hourly Rate ($)</legend>
+      <input type="number" id="hourlyRate" step="0.01" value="100.00" readonly>
+    </fieldset>
+
+    <button type="button" class="btn-save" id="saveButton" onclick="saveChanges()">SAVE CHANGES</button>
+    <button type="button" class="btn-logout">LOG OUT</button>
+
+  </div>
+</div>
+
+<!-- Minimal inline script strictly for demonstrating the toggle state logic -->
+<script>
+  function toggleEdit(section) {
+      let fields = [];
+      if (section === 'profile') {
+          fields = ['fullName', 'homeAddress'];
+      } else if (section === 'billing') {
+          fields = ['hstNumber', 'hourlyRate'];
+      }
+
+      fields.forEach(field => {
+          const input = document.getElementById(field);
+          const fieldset = document.getElementById('fs-' + field);
+
+          if (input.hasAttribute('readonly')) {
+              input.removeAttribute('readonly');
+              fieldset.classList.add('editing');
+              document.getElementById('saveButton').style.display = 'block';
+          }
+      });
+  }
+
+  function saveChanges() {
+      const allFields = ['fullName', 'homeAddress', 'hstNumber', 'hourlyRate'];
+      allFields.forEach(field => {
+          document.getElementById(field).setAttribute('readonly', 'true');
+          document.getElementById('fs-' + field).classList.remove('editing');
+      });
+      document.getElementById('saveButton').style.display = 'none';
+  }
+</script>
+</body>
+</html>

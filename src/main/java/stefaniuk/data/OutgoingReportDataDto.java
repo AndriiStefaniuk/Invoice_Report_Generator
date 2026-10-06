@@ -36,9 +36,12 @@ public class OutgoingReportDataDto {
     @JsonProperty("second_week_hours")
     private double secondWeekHours;
 
+    @JsonProperty("total_amount")
+    private String totalAmount;
+
     public OutgoingReportDataDto(int id, List<String> siteAddressArray, LocalDate firstWeekStartDate,
                                  LocalDate firstWeekEndDate, double firstWeekHours, LocalDate secondWeekStartDate,
-                                 LocalDate secondWeekEndDate, double secondWeekHours) {
+                                 LocalDate secondWeekEndDate, double secondWeekHours, String totalAmount) {
         this.id = id;
         this.siteAddressArray = siteAddressArray;
         this.firstWeekStartDate = firstWeekStartDate;
@@ -47,6 +50,7 @@ public class OutgoingReportDataDto {
         this.secondWeekStartDate = secondWeekStartDate;
         this.secondWeekEndDate = secondWeekEndDate;
         this.secondWeekHours = secondWeekHours;
+        this.totalAmount = totalAmount;
     }
 
     public OutgoingReportDataDto() {}
@@ -115,17 +119,7 @@ public class OutgoingReportDataDto {
         this.secondWeekHours = secondWeekHours;
     }
 
-    @Override
-    public String toString() {
-        return "OutgoingReportDataDto{" +
-                "id=" + id +
-                ", siteAddressArray=" + siteAddressArray +
-                ", firstWeekStartDate=" + firstWeekStartDate +
-                ", firstWeekEndDate=" + firstWeekEndDate +
-                ", firstWeekHours=" + firstWeekHours +
-                ", secondWeekStartDate=" + secondWeekStartDate +
-                ", secondWeekEndDate=" + secondWeekEndDate +
-                ", secondWeekHours=" + secondWeekHours +
-                '}';
-    }
+    public String getTotalAmount() { return totalAmount; }
+
+    public void setTotalAmount(String totalAmount) { this.totalAmount = totalAmount; }
 }

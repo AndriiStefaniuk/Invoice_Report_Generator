@@ -133,7 +133,13 @@ public class Service {
             // token might be expired, suggest sign in again
             throw new TokenExpiredException("Service -> saveReport(): invalid token");
         }
-        reportEntryTableManager.saveReportData(userId, reportData);
+
+        UserSettings settings = userTableManager.fetchUserSettings(userId);
+        if(settings == null) {
+            throw new RuntimeException("Service -> saveReport(): user settings not found");
+        }
+
+        reportEntryTableManager.saveReportData(userId, reportData, settings.getHourlyRate());
     }
 
     /**
@@ -157,7 +163,12 @@ public class Service {
             throw new TokenExpiredException("Service -> updateReport(): invalid token");
         }
 
-        reportEntryTableManager.updateReport(userId, initialReportStartDate, updatedReportData);
+        stefaniuk.data.UserSettings settings = userTableManager.fetchUserSettings(userId);
+        if(settings == null) {
+            throw new RuntimeException("Service -> updateReport(): user settings not found");
+        }
+
+        reportEntryTableManager.updateReport(userId, initialReportStartDate, updatedReportData, settings.getHourlyRate());
     }
 
 

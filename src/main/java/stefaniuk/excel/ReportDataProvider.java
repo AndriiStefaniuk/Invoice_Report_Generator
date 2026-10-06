@@ -4,7 +4,6 @@ import stefaniuk.data.IncomingReportDataDto;
 import stefaniuk.data.UserSettings;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -129,19 +128,30 @@ public class ReportDataProvider {
         return week2StartDate.format(formatter) + " - " + week2EndDate.format(formatter);
     }
 
+    /**
+     * formats the hours to be shown as 00:00, not as fractions
+     * @param decimalHours double object representing hours as decimal
+     *                     Example: 30 min = 0.5
+     * @return String object representing formated hours as 00:00
+     */
+    private String formatHoursToTime(double decimalHours) {
+        int hours = (int) decimalHours;
+        int minutes = (int) Math.round((decimalHours - hours) * 60);
+        return String.format("%02d:%02d", hours, minutes);
+    }
 
     /**
      * @return String object containing the number of hours
      */
     public String getFirstWeekHours(){
-        return String.valueOf(reportData.getFirstWeekHours());
+        return formatHoursToTime(reportData.getFirstWeekHours());
     }
 
     /**
      * @return String object containing the number of hours
      */
     public String getSecondWeekHours(){
-        return String.valueOf(reportData.getSecondWeekHours());
+        return formatHoursToTime(reportData.getSecondWeekHours());
     }
 
 
@@ -150,7 +160,7 @@ public class ReportDataProvider {
      */
     public String getTotalHours(){
         double totalHours = reportData.getFirstWeekHours() + reportData.getSecondWeekHours();
-        return String.format("%.2f", totalHours);
+        return formatHoursToTime(totalHours);
     }
 
     public String getHourlyRate(){

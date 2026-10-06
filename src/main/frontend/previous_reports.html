@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Details - Chuhax</title>
+  <style>
+    :root {
+        --bg-color: #E8DECF;
+        --primary-blue: #0B2A4A;
+        --border-color: #5A6D80;
+        --card-bg: rgba(255, 255, 255, 0.4);
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--primary-blue);
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+    }
+
+    .app-container {
+        width: 100%;
+        max-width: 480px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--bg-color);
+        min-height: 100vh;
+        position: relative;
+    }
+
+    /* Top Navigation Bar */
+    .top-nav {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        background-color: var(--primary-blue);
+        color: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .nav-title {
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    /* Content Area */
+    .content {
+        padding: 25px 20px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    /* Date Navigation Area */
+    .date-navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .arrow-btn {
+        background: none;
+        border: none;
+        color: var(--primary-blue);
+        font-size: 28px;
+        cursor: pointer;
+        padding: 0 10px;
+        transition: transform 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .arrow-btn:active {
+        transform: scale(0.85);
+    }
+
+    .overall-date {
+        font-size: 20px;
+        font-weight: 800;
+        text-align: center;
+        color: var(--primary-blue);
+        margin: 0;
+    }
+
+    /* Data Card */
+    .report-card {
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 20px;
+        background-color: var(--card-bg);
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 5px;
+    }
+
+    /* Sites List */
+    .site-list {
+        margin: 0 0 20px 0;
+        padding-left: 20px;
+        font-size: 15px;
+        line-height: 1.5;
+    }
+
+    /* Breakdown Rows */
+    .data-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 15px;
+        font-size: 15px;
+    }
+
+    .data-label {
+        font-weight: 600;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .date-sub {
+        font-size: 12px;
+        font-weight: 400;
+        color: #444;
+        margin-top: 2px;
+    }
+
+    .data-value {
+        font-weight: 500;
+    }
+
+    /* Total Section */
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 25px;
+        padding-top: 15px;
+        border-top: 2px solid var(--primary-blue);
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    .total-value {
+        font-size: 22px;
+    }
+
+    /* Bottom Action Buttons */
+    .action-group {
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        padding-bottom: 20px;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 16px;
+        font-size: 15px;
+        font-weight: 700;
+        text-transform: uppercase;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        background-color: var(--primary-blue);
+        color: #ffffff;
+        border: none;
+        box-shadow: 0 4px 6px rgba(11, 42, 74, 0.2);
+    }
+
+    .btn:hover {
+        background-color: #081f38;
+    }
+
+    .btn:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 4px rgba(11, 42, 74, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- Top Navigation -->
+  <div class="top-nav">
+    <div class="nav-title">Report Details</div>
+  </div>
+
+  <div class="content">
+    <!-- Date Navigation Headers placed on the sides -->
+    <div class="date-navigation">
+      <button class="arrow-btn">&larr;</button>
+      <div class="overall-date">OCT 1 - OCT 14, 2026</div>
+      <button class="arrow-btn">&rarr;</button>
+    </div>
+
+    <div class="report-card">
+
+      <!-- Site Addresses -->
+      <div class="section-title">Site Address(es)</div>
+      <ul class="site-list">
+        <li>123 Dundas St E, Mississauga</li>
+        <li>456 Mavis Rd, Mississauga</li>
+      </ul>
+
+      <!-- Weekly Breakdown -->
+      <div class="section-title">Hours Worked</div>
+
+      <div class="data-row">
+        <div class="data-label">
+          Week 1
+          <span class="date-sub">(Oct 1 - Oct 7)</span>
+        </div>
+        <div class="data-value">18.0 Hours</div>
+      </div>
+
+      <div class="data-row">
+        <div class="data-label">
+          Week 2
+          <span class="date-sub">(Oct 8 - Oct 14)</span>
+        </div>
+        <div class="data-value">17.5 Hours</div>
+      </div>
+
+      <!-- Total Amount -->
+      <div class="total-row">
+        <div>TOTAL EARNED</div>
+        <div class="total-value">$4,011.50</div>
+      </div>
+    </div>
+
+    <!-- Single Bottom Action -->
+    <div class="action-group">
+      <button class="btn">
+        <span>&#11123;</span> DOWNLOAD REPORT (.XLSX)
+      </button>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
