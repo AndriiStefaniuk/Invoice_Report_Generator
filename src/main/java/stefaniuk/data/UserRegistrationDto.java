@@ -11,6 +11,7 @@ public class UserRegistrationDto {
 
     @JsonProperty("user_name")
     private String userName;
+    // stores the email as a username
 
     @JsonProperty("password")
     private String password;
@@ -20,6 +21,9 @@ public class UserRegistrationDto {
 
     @JsonProperty("home_address")
     private String homeAddress;
+    // Example "4200 University Ave, Unit 12|Mississauga, ON L5L 1C6"
+    // Note: use "|" to separate the address.
+    // Address is broken down into Street Level and Locality Level in report
 
     @JsonProperty("hst_number")
     private String hstNumber;

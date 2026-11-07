@@ -206,7 +206,7 @@ public class ExcelFileWriter {
     private void fillInAmountColumn(){
         byte dollarColumnIndex = 12;
         byte centColumnIndex = 13;
-        int[] dollarsAndCents; // first element is dollars, second is cents
+        String[] dollarsAndCents; // first element is dollars, second is cents
 
         // first week
         dollarsAndCents = dataProvider.getFirstWeekEarned();
@@ -270,53 +270,65 @@ public class ExcelFileWriter {
 
 
     /**
-     * creates a given number of rows starting at row index 16 (adds rows after row index 16)
-     * handles the formatting for rows as well
+     * Creates extra rows for additional site addresses starting at row index 16.
+     * Shifts all rows once as a block to avoid referencing newly created blank rows.
+     *
      * @param rowsToInsert byte object representing number of rows to add
      */
     private void createSiteAddressesRows(byte rowsToInsert) {
-        int newRowIndex = 16; //Add the new row between row 16 and 17
+        if (rowsToInsert <= 0) {
+            return;
+        }
 
-        for(int i = 0; i < rowsToInsert; i ++){
-            Row sourceRow = sheet.getRow(16);
-            // Shifting rows from index 15 to the end of the sheet down by 1 row
-            sheet.shiftRows(newRowIndex, sheet.getLastRowNum(), 1);
-            Row newRow = sheet.createRow(newRowIndex);
-            formatRow(sourceRow,newRow);
+        int startRowIndex = 16;
+        // store the template source row before shifting
+        Row sourceRow = sheet.getRow(startRowIndex);
+        if (sourceRow == null) {
+            return;
+        }
+
+        // shift all subsequent rows down once by the total count
+        int lastRowIndex = sheet.getLastRowNum();
+        if (lastRowIndex >= startRowIndex) {
+            sheet.shiftRows(startRowIndex, lastRowIndex, rowsToInsert, true, false);
+        }
+
+        // create and format each new row in the newly opened space
+        for (int i = 0; i < rowsToInsert; i++) {
+            Row newRow = sheet.createRow(startRowIndex + i);
+            formatRow(sourceRow, newRow);
         }
     }
 
 
     /**
-     * formats the new row in same way as the source row (copies format from source to new row)
-     * @param sourceRow Row object containing the formated row as a source of format/style
-     * @param newRow Row object to be formated
+     * Formats the new row identically to the source row, safely guarding against null cells.
+     *
+     * @param sourceRow Row object containing the formatted row as a source of style
+     * @param newRow Row object to be formatted
      */
     private void formatRow(Row sourceRow, Row newRow) {
-        // format cells in the range 4 to 13 inclusive
-        int startColIndex = 4; // including
-        int endColIndex = 13; // including
+        int startColIndex = 4;
+        int endColIndex = 13;
 
-        // set the height of the row
         short sourceHeight = sourceRow.getHeight();
         newRow.setHeight(sourceHeight);
 
-        for(int i = startColIndex; i <= endColIndex; i ++){
-            // style cells
+        for (int i = startColIndex; i <= endColIndex; i++) {
             Cell sourceCell = sourceRow.getCell(i);
-            CellStyle sourceStyle = sourceCell.getCellStyle();
             int sourceWidth = sheet.getColumnWidth(i);
 
             Cell targetCell = newRow.getCell(i);
-            if(targetCell == null){
+            if (targetCell == null) {
                 targetCell = newRow.createCell(i);
             }
-            targetCell.setCellStyle(sourceStyle);
+
+            if (sourceCell != null) {
+                targetCell.setCellStyle(sourceCell.getCellStyle());
+            }
             sheet.setColumnWidth(i, sourceWidth);
         }
 
-        // merge cells with index 5 to 8 together
-        // (rowFrom, rowTo, colFrom, colTo)
         sheet.addMergedRegion(new CellRangeAddress(newRow.getRowNum(), newRow.getRowNum(), 5, 8));
     }
 

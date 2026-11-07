@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Chuhax</title>
+    <script>
+        // Apply saved/system theme before first paint to avoid a light flash
+        try {
+            var savedTheme = localStorage.getItem("theme");
+            if (!savedTheme) {
+                savedTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+            }
+            document.documentElement.setAttribute("data-theme", savedTheme);
+        } catch (e) {}
+    </script>
+    <style>
+        :root {
+            --bg-color: #E8DECF;
+            --primary-blue: #0B2A4A;
+            --input-bg: rgba(255, 255, 255, 0.4);
+            --border-color: #5A6D80;
+            --rule-neutral: #4A5B6D;
+            --rule-valid: #1E6B37;
+            --rule-invalid: #A62A2A;
+            --input-text: #333;
+            --placeholder: #666;
+            --option-text: #333;
+            --option-bg: #ffffff;
+            --btn-bg: #0B2A4A;
+            --btn-text: #ffffff;
+            --btn-hover: #081f38;
+            --checklist-bg: rgba(255, 255, 255, 0.25);
+            --checklist-border: rgba(90, 109, 128, 0.3);
+        }
+
+        :root[data-theme="dark"] {
+            color-scheme: dark;
+            --bg-color: #101820;
+            --primary-blue: #E8DECF;
+            --input-bg: rgba(255, 255, 255, 0.07);
+            --border-color: #7F93A8;
+            --rule-neutral: #B5C2CF;
+            --rule-valid: #6FD08C;
+            --rule-invalid: #FF8A8A;
+            --input-text: #F1ECE2;
+            --placeholder: #A9B6C3;
+            --option-text: #F1ECE2;
+            --option-bg: #1B2733;
+            --btn-bg: #3F72A8;
+            --btn-text: #ffffff;
+            --btn-hover: #356399;
+            --checklist-bg: rgba(255, 255, 255, 0.05);
+            --checklist-border: rgba(127, 147, 168, 0.35);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-blue);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            padding: 30px 20px;
+            box-sizing: border-box;
+        }
+
+
+        .toolbar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .toolbar button {
+            cursor: pointer;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 3px;
+            height: 28px;
+            color: var(--primary-blue);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .lang-btn {
+            width: 40px;
+        }
+
+        .lang-btn svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border-radius: 3px;
+        }
+
+        .lang-btn[aria-pressed="true"] {
+            outline: 2px solid var(--primary-blue);
+            outline-offset: 1px;
+        }
+
+        .theme-btn {
+            width: 34px;
+            margin-left: 6px;
+        }
+
+        .theme-btn .icon-sun { display: none; }
+        :root[data-theme="dark"] .theme-btn .icon-sun { display: block; }
+        :root[data-theme="dark"] .theme-btn .icon-moon { display: none; }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            max-width: 120px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 16px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            min-width: 45%;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+            line-height: normal;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%235A6D80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        :root[data-theme="dark"] select {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23A9B6C3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+        }
+
+
+        select:invalid,
+        select option[value=""] {
+            color: var(--placeholder);
+        }
+
+        select option {
+            color: var(--option-text);
+            background-color: var(--option-bg);
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--primary-blue);
+            border-width: 2px;
+            padding: 13px 15px;
+        }
+
+        select:focus {
+            padding-right: 39px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .password-checklist {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin: 6px 0 16px 2px;
+            padding: 10px 14px;
+            background-color: var(--checklist-bg);
+            border: 1px solid var(--checklist-border);
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .checklist-item {
+            font-size: 13px;
+            color: var(--rule-neutral);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s ease, font-weight 0.2s ease;
+        }
+
+
+        .checklist-item::before {
+            content: "○";
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+
+        .checklist-item.valid {
+            color: var(--rule-valid);
+            font-weight: 700;
+        }
+
+        .checklist-item.valid::before {
+            content: "✓";
+            font-size: 13px;
+        }
+
+
+        .checklist-item.missed {
+            color: var(--rule-invalid);
+            font-weight: 700;
+        }
+
+        .checklist-item.missed::before {
+            content: "✖";
+            font-size: 13px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            margin-top: 25px;
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(11, 42, 74, 0.2);
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--btn-hover);
+        }
+
+        .btn-submit:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(11, 42, 74, 0.2);
+        }
+
+        ::placeholder {
+            color: var(--placeholder);
+            opacity: 1;
+        }
+
+        @media screen and (max-width: 380px) {
+            .form-row .form-group {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="toolbar">
+        <div class="lang-group" role="group" data-translate-aria-label="languageGroup" style="display:flex; gap:8px;">
+            <button type="button" class="lang-btn" data-lang="en" aria-label="English" title="English">
+                <svg viewBox="0 0 60 30" preserveAspectRatio="none" aria-hidden="true">
+                    <clipPath id="unionJackFrame"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
+                    <clipPath id="unionJackDiagonals"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath>
+                    <g clip-path="url(#unionJackFrame)">
+                        <path d="M0,0 v30 h60 v-30 z" fill="#012169"/>
+                        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+                        <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#unionJackDiagonals)" stroke="#C8102E" stroke-width="4"/>
+                        <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
+                        <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/>
+                    </g>
+                </svg>
+            </button>
+            <button type="button" class="lang-btn" data-lang="fr"  aria-label="Français" title="Français">
+                <svg viewBox="0 0 3 2" preserveAspectRatio="none" aria-hidden="true">
+                    <rect width="1" height="2" fill="#002654"/>
+                    <rect x="1" width="1" height="2" fill="#ffffff"/>
+                    <rect x="2" width="1" height="2" fill="#CE1126"/>
+                </svg>
+            </button>
+            <button type="button" class="lang-btn" data-lang="uk" aria-label="Українська" title="Українська">
+                <svg viewBox="0 0 3 2" preserveAspectRatio="none" aria-hidden="true">
+                    <rect width="3" height="1" fill="#0057B7"/>
+                    <rect y="1" width="3" height="1" fill="#FFD700"/>
+                </svg>
+            </button>
+        </div>
+
+        <button type="button" class="theme-btn" id="themeToggle" data-translate-aria-label="themeButtonLabel" data-translate-title="themeButtonLabel">
+            <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+            </svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="4"/>
+                <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="logo-container">
+        <img src="/images_temporary/logo.png" alt="Logo" class="logo">
+    </div>
+
+    <h1 data-translate="heading">Create New Account</h1>
+
+    <div class="account-container">
+        <h2 data-translate="personalInfo">Personal Info</h2>
+
+        <div class="form-row">
+            <div class="form-group">
+                <input type="text" id="firstName" placeholder="First Name" data-translate-placeholder="firstName" autocomplete="given-name" enterkeyhint="next">
+            </div>
+            <div class="form-group">
+                <input type="text" id="lastName" placeholder="Last Name" data-translate-placeholder="lastName" autocomplete="family-name" enterkeyhint="next">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <input type="email" id="email" placeholder="Email" data-translate-placeholder="email" autocomplete="email" enterkeyhint="next">
+        </div>
+
+        <div class="form-group">
+            <input type="password" id="password" placeholder="Password" data-translate-placeholder="password" autocomplete="new-password" enterkeyhint="next">
+        </div>
+
+        <div id="passwordChecklist" class="password-checklist">
+            <span id="ruleLength" class="checklist-item" data-translate="ruleLength">At least 8 characters</span>
+            <span id="ruleDigit" class="checklist-item" data-translate="ruleDigit">At least 1 number</span>
+            <span id="ruleSpecialChar" class="checklist-item" data-translate="ruleSpecialChar">At least 1 special character (!@#$%^&*()_-.)</span>
+        </div>
+
+        <div class="form-group">
+            <input type="password" id="confirmPassword" placeholder="Confirm Password" data-translate-placeholder="confirmPassword" autocomplete="new-password" enterkeyhint="next">
+        </div>
+
+        <h2 data-translate="homeAddress">Home Address</h2>
+
+        <div class="form-group">
+            <input type="text" id="streetAddress" placeholder="Street Address" data-translate-placeholder="streetAddress" autocomplete="address-line1" enterkeyhint="next">
+        </div>
+
+        <div class="form-group">
+            <input type="text" id="addressLine2" placeholder="Apt, Suite, Unit (Optional)" data-translate-placeholder="addressLine2" autocomplete="address-line2" enterkeyhint="next">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <input type="text" id="city" placeholder="City" data-translate-placeholder="city" autocomplete="address-level2" enterkeyhint="next">
+            </div>
+            <div class="form-group">
+                <select id="province" required autocomplete="address-level1">
+                    <option value="" disabled selected hidden data-translate="province">Province</option>
+                    <option value="AB" data-translate="provinceAB">Alberta</option>
+                    <option value="BC" data-translate="provinceBC">British Columbia</option>
+                    <option value="MB" data-translate="provinceMB">Manitoba</option>
+                    <option value="NB" data-translate="provinceNB">New Brunswick</option>
+                    <option value="NL" data-translate="provinceNL">Newfoundland and Labrador</option>
+                    <option value="NS" data-translate="provinceNS">Nova Scotia</option>
+                    <option value="NT" data-translate="provinceNT">Northwest Territories</option>
+                    <option value="NU" data-translate="provinceNU">Nunavut</option>
+                    <option value="ON" data-translate="provinceON">Ontario</option>
+                    <option value="PE" data-translate="provincePE">Prince Edward Island</option>
+                    <option value="QC" data-translate="provinceQC">Quebec</option>
+                    <option value="SK" data-translate="provinceSK">Saskatchewan</option>
+                    <option value="YT" data-translate="provinceYT">Yukon</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <input type="text" id="postalCode" placeholder="Postal Code" data-translate-placeholder="postalCode" autocomplete="postal-code" enterkeyhint="next">
+        </div>
+
+        <h2 data-translate="businessDetails">Business &amp; Billing Details</h2>
+
+        <div class="form-group">
+            <input type="text" id="hstNumber" placeholder="HST Number" data-translate-placeholder="hstNumber" enterkeyhint="next">
+        </div>
+
+        <div class="form-group">
+            <input type="text" inputmode="decimal" id="hourlyRate" placeholder="Default Hourly Rate ($)" data-translate-placeholder="hourlyRate" step="0.1" min="0" enterkeyhint="done">
+        </div>
+
+        <button type="button" class="btn-submit" id="submitButton" data-translate="registerButton">Register &amp; Save</button>
+    </div>
+</div>
+
+<script type="module" src="../JavaScript/sign-up/sign-up-theme-languages.js"></script>
+<script type="module" src="../JavaScript/sign-up/sign-up.js"></script>
+</body>
+</html>

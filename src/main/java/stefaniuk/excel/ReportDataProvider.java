@@ -8,6 +8,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * class used to provide data, either from the database or calculate some unrelated to database data, which is used in report
@@ -105,6 +106,7 @@ public class ReportDataProvider {
     }
 
 
+
     public String getFirstWeekDate() {
         // start date is always Monday
         LocalDate week1StartDate =  reportData.getPeriodStartDate();
@@ -135,10 +137,17 @@ public class ReportDataProvider {
      * @return String object representing formated hours as 00:00
      */
     private String formatHoursToTime(double decimalHours) {
-        int hours = (int) decimalHours;
-        int minutes = (int) Math.round((decimalHours - hours) * 60);
+        if (Double.isNaN(decimalHours) || decimalHours <= 0.0) {
+            return "00:00";
+        }
+        long totalMinutes = Math.round(decimalHours * 60.0);
+
+        long hours = totalMinutes / 60;
+        long minutes = totalMinutes % 60;
+
         return String.format("%02d:%02d", hours, minutes);
     }
+
 
     /**
      * @return String object containing the number of hours
@@ -163,116 +172,111 @@ public class ReportDataProvider {
         return formatHoursToTime(totalHours);
     }
 
-    public String getHourlyRate(){
-        return String.valueOf(userSettings.getHourlyRate());
+    public String getHourlyRate() {
+        return String.format(Locale.CANADA, "%.2f", getHourlyRateAsBigDecimal());
+    }
+
+
+    /**
+     * Converts the user's hourly rate into a BigDecimal.
+     *
+     * @return BigDecimal representation of the hourly rate
+     */
+    private BigDecimal getHourlyRateAsBigDecimal() {
+        return BigDecimal.valueOf(userSettings.getHourlyRate());
+    }
+
+    /**
+     * Converts decimal hours into a BigDecimal.
+     *
+     * @param hours worked hours as a decimal
+     * @return BigDecimal representation of the hours
+     */
+    private BigDecimal getHoursAsBigDecimal(double hours) {
+        return BigDecimal.valueOf(hours);
+    }
+
+    /**
+     * Splits a monetary amount into dollars and two-digit cents.
+     *
+     * @param amount monetary value
+     * @return two-element array: [0] = dollars, [1] = two-digit cents
+     */
+    private String[] toDollarsAndCents(BigDecimal amount) {
+        BigDecimal scaled = amount.setScale(2, RoundingMode.HALF_UP);
+        int dollars = scaled.intValue();
+        int cents = scaled.remainder(BigDecimal.ONE).movePointRight(2).intValue();
+        return new String[]{ String.valueOf(dollars), String.format(Locale.CANADA, "%02d", cents) };
     }
 
 
 
     /**
-     * returns the amount earned in first week (hourly rate * hours worked)
-     * @return array of integers, first element is dollars, second is cents
+     * Calculates earnings for a given number of hours rounded to standard currency scale.
+     *
+     * @param hours worked hours
+     * @return rounded BigDecimal amount
      */
-    public int[] getFirstWeekEarned(){
-        double hourlyRate = userSettings.getHourlyRate();
-        double hoursWorked = reportData.getFirstWeekHours();
-
-        double earned = hourlyRate * hoursWorked; // in dollars and cents
-
-        return separateDollarsAndCents(earned);
+    private BigDecimal calculateEarnedAmount(double hours) {
+        return getHourlyRateAsBigDecimal()
+                .multiply(getHoursAsBigDecimal(hours))
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
-
-    /**
-     * returns the amount earned in second week (hourly rate * hours worked)
-     * @return array of integers, first element is dollars, second is cents
-     */
-    public int[] getSecondWeekEarned(){
-        double hourlyRate = userSettings.getHourlyRate();
-        double hoursWorked = reportData.getSecondWeekHours();
-
-        double earned = hourlyRate * hoursWorked; // in dollars and cents
-
-        return separateDollarsAndCents(earned);
+    public String[] getFirstWeekEarned() {
+        BigDecimal earned = calculateEarnedAmount(reportData.getFirstWeekHours());
+        return toDollarsAndCents(earned);
     }
 
-
-    /**
-     * returns the amount earned in two weeks (hourly rate * hours worked)
-     * @return array of integers, first element is dollars, second is cents
-     */
-    public int[] getTotalEarned(){
-        double hourlyRate = userSettings.getHourlyRate();
-        double hoursWorked = reportData.getFirstWeekHours() + reportData.getSecondWeekHours();
-
-        double earned = hourlyRate * hoursWorked; // in dollars and cents
-
-        return separateDollarsAndCents(earned);
-    }
-
-
-    /**
-     * returns the HST amount (13% of earned total)
-     * @return array of integers, first element is dollars, second is cents
-     */
-    public int[] getHstAmount(){
-        int[] dollarsAndCents = getTotalEarned();
-
-        BigDecimal dollars = new BigDecimal(String.valueOf(dollarsAndCents[0]));
-        BigDecimal cents = new BigDecimal(String.valueOf(dollarsAndCents[1]));
-        BigDecimal amount = dollars.add(cents.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
-
-        BigDecimal hstRate = new BigDecimal("0.13"); // 13% tax rate
-
-        BigDecimal hstAmount = amount.multiply(hstRate).setScale(2, RoundingMode.HALF_UP);
-
-        // Extract dollars and cents directly from BigDecimal without double conversion
-        int dollarsInt = hstAmount.intValue();
-
-        // if hstAmount = 19.53
-        // hstAmount.remainder(BigDecimal.ONE) -> 0.53 <- (19.53 % 1)
-        // movePointRight(2) -> 53.00
-        // intValue() -> 53 (cents)
-        int centsInt = hstAmount.remainder(BigDecimal.ONE).movePointRight(2).intValue();
-
-        return new int[] {dollarsInt, centsInt};
-    }
-
-
-    /**
-     * returns the total of report including HST amount + Total earned in two weeks
-     * @return array of integers, first element is dollars, second is cents
-     */
-    public int[] getTotalWithHst(){
-        // first element is dollar amount, second element is cent amoun
-        int[] earned = getTotalEarned();
-        int[] hst = getHstAmount();
-
-        // Convert both to total cents
-        int totalEarnedCents = (earned[0] * 100) + earned[1];
-        int totalHstCents = (hst[0] * 100) + hst[1];
-
-        int totalCents = totalEarnedCents + totalHstCents;
-
-        return new int[] { totalCents / 100, totalCents % 100 };
+    public String[] getSecondWeekEarned() {
+        BigDecimal earned = calculateEarnedAmount(reportData.getSecondWeekHours());
+        return toDollarsAndCents(earned);
     }
 
     /**
-     * splits the provided amount into dollars and cents
-     * @param amount double object representing the amount of money to split
-     * @return array of in where first element is dollar amount and second is cents
+     * Returns the total earned in two weeks as the exact sum of both line items,
+     * preventing off-by-a-penny invoice display discrepancies.
+     *
+     * @return array of Strings: index 0 is dollars, index 1 is two-digit cents
      */
-    private int[] separateDollarsAndCents(double amount){
-        // Math.round fixes binary floating-point imprecision
-        // by using the int conversion:
-        //          int earnedCents = (int) (earned * 100);
-        //  19.99 * 100 can evaluate to 1998.9999999999998, not 1999
-        int earnedCents = (int) Math.round(amount * 100.0);
+    public String[] getTotalEarned() {
+        BigDecimal week1 = calculateEarnedAmount(reportData.getFirstWeekHours());
+        BigDecimal week2 = calculateEarnedAmount(reportData.getSecondWeekHours());
+        BigDecimal totalEarned = week1.add(week2);
+        return toDollarsAndCents(totalEarned);
+    }
 
-        // separate dollars and cents earned
-        int dollars = earnedCents / 100;
-        int cents = earnedCents % 100;
+    /**
+     * Returns the HST amount (13% of earned total).
+     *
+     * @return array of Strings: index 0 is dollars, index 1 is two-digit cents
+     */
+    public String[] getHstAmount() {
+        BigDecimal week1 = calculateEarnedAmount(reportData.getFirstWeekHours());
+        BigDecimal week2 = calculateEarnedAmount(reportData.getSecondWeekHours());
+        BigDecimal totalEarned = week1.add(week2);
 
-        return new int[] {dollars, cents};
+        BigDecimal hstRate = new BigDecimal("0.13");
+        BigDecimal hstAmount = totalEarned.multiply(hstRate).setScale(2, RoundingMode.HALF_UP);
+
+        return toDollarsAndCents(hstAmount);
+    }
+
+    /**
+     * Returns the grand total (earned subtotal + HST).
+     *
+     * @return array of Strings: index 0 is dollars, index 1 is two-digit cents
+     */
+    public String[] getTotalWithHst() {
+        BigDecimal week1 = calculateEarnedAmount(reportData.getFirstWeekHours());
+        BigDecimal week2 = calculateEarnedAmount(reportData.getSecondWeekHours());
+        BigDecimal totalEarned = week1.add(week2);
+
+        BigDecimal hstRate = new BigDecimal("0.13");
+        BigDecimal hstAmount = totalEarned.multiply(hstRate).setScale(2, RoundingMode.HALF_UP);
+
+        BigDecimal grandTotal = totalEarned.add(hstAmount);
+
+        return toDollarsAndCents(grandTotal);
     }
 }
